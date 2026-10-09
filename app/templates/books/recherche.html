@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block title %}{{ 'Recherche « ' ~ query ~ ' »' if query else 'Recherche' }} · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<p class="eyebrow">RECHERCHE</p>
+<h1 class="page-title">{% if query %}« {{ query }} »{% else %}Trouve un livre{% endif %}</h1>
+
+{% if language_note %}<div class="notice"><p>{{ language_note }}</p></div>{% endif %}
+
+{% if error %}
+<div class="alert" role="alert"><p>{{ error }}</p></div>
+{% elif not query %}
+<p class="muted">Tape un titre ou un nom d'auteur dans la barre de recherche, accents facultatifs.</p>
+{% elif not results %}
+<section class="card empty-state">
+  <span class="cover-face" aria-hidden="true">•︵•</span>
+  <h2>Aucun livre trouvé</h2>
+  <p class="muted">Rien ne correspond à « {{ query }} »{% if active_filters %} avec tes filtres actuels{% endif %}.</p>
+  {% if active_filters %}
+  <button class="btn btn-lime btn-small" type="button" data-filters-open>Ajuster mes filtres</button>
+  {% endif %}
+</section>
+{% else %}
+<p class="muted">{{ total }} livre{{ 's' if total > 1 }} trouvé{{ 's' if total > 1 }}{% if pages > 1 %} · page {{ page }} sur {{ pages }}{% endif %}</p>
+<div class="book-grid">
+  {% for b in results %}
+  {% with book=b, score=scores.get(b.id), link_args={'q': query}, note='Résultat approché' if b.id in approx else None %}{% include "_book_card.html" %}{% endwith %}
+  {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<nav class="pagination" aria-label="Pages de résultats">
+  {% if page > 1 %}<a class="btn btn-ghost btn-small" href="{{ url_for('books.recherche', q=query, page=page - 1) }}">← Précédente</a>{% endif %}
+  <span class="muted">{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a class="btn btn-ghost btn-small" href="{{ url_for('books.recherche', q=query, page=page + 1) }}">Suivante →</a>{% endif %}
+</nav>
+{% endif %}
+{% endif %}
+{% endblock %}

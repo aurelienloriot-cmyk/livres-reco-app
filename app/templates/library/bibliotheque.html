@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% from "_macros.html" import hearts %}
+{% block title %}Ma bibliothèque · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<p class="eyebrow">TES LECTURES</p>
+<h1 class="page-title">Ma bibliothèque</h1>
+
+<nav class="tabs" aria-label="Onglets de la bibliothèque">
+  {% for t in tabs %}
+  <a class="tab{% if t.slug == tab %} active{% endif %}" href="{{ url_for('library.bibliotheque', onglet=t.slug) }}"
+     {% if t.slug == tab %}aria-current="page"{% endif %}>{{ t.label }} <span class="tab-count">{{ t.count }}</span></a>
+  {% endfor %}
+</nav>
+
+{% set here = url_for('library.bibliotheque', onglet=tab) %}
+{% if readings %}
+<ol class="shelf">
+  {% for r in readings %}
+  <li class="card shelf-item" id="livre-{{ r.book_id }}">
+    {% with book={'id': r.book_id, 'title': r.title, 'authors': r.authors, 'isbn': r.isbn, 'thumbnail': r.thumbnail} %}
+    <a class="shelf-cover" href="{{ url_for('books.fiche', book_id=r.book_id) }}" tabindex="-1">{% include "_cover.html" %}</a>
+    {% endwith %}
+    <div class="shelf-body">
+      {% if tab == 'a-lire' %}<span class="badge">N° {{ r.rank }}</span>{% endif %}
+      <h2><a href="{{ url_for('books.fiche', book_id=r.book_id) }}">{{ r.title }}</a></h2>
+      <p class="book-author">{{ r.authors|join(', ') if r.authors else 'Auteur inconnu' }}</p>
+      {% with score=scores.get(r.book_id) %}{% include "_affinity.html" %}{% endwith %}
+
+      {% if tab == 'a-lire' %}
+      <div class="shelf-actions">
+        <form method="post" action="{{ url_for('library.monter', reading_id=r.id) }}">
+          <button class="btn btn-ghost btn-small" type="submit"{% if loop.first %} disabled{% endif %}>↑ Monter</button>
+        </form>
+        <form method="post" action="{{ url_for('library.descendre', reading_id=r.id) }}">
+          <button class="btn btn-ghost btn-small" type="submit"{% if loop.last %} disabled{% endif %}>↓ Descendre</button>
+        </form>
+        <form method="post" action="{{ url_for('books.commencer', book_id=r.book_id) }}">
+          <input type="hidden" name="date" value="{{ today }}">
+          <input type="hidden" name="next" value="{{ url_for('library.bibliotheque', onglet='en-cours') }}">
+          <button class="btn btn-primary btn-small" type="submit">Commencer</button>
+        </form>
+        <form method="post" action="{{ url_for('library.retirer', reading_id=r.id) }}">
+          <button class="btn btn-ghost btn-small" type="submit">Retirer</button>
+        </form>
+      </div>
+
+      {% elif tab == 'en-cours' %}
+      <form method="post" action="{{ url_for('library.dates', reading_id=r.id) }}" class="date-form">
+        <label>Commencé le
+          <input type="date" name="start_date" value="{{ r.start_date }}" max="{{ today }}" required>
+        </label>
+        <button class="btn btn-ghost btn-small" type="submit">Modifier</button>
+      </form>
+      <div class="shelf-actions">
+        <a class="btn btn-ghost btn-small" href="{{ url_for('books.fiche', book_id=r.book_id) }}">Voir</a>
+        <form method="post" action="{{ url_for('books.terminer', book_id=r.book_id) }}">
+          <input type="hidden" name="date" value="{{ today }}">
+          <input type="hidden" name="next" value="{{ here }}">
+          <button class="btn btn-primary btn-small" type="submit">Terminer</button>
+        </form>
+      </div>
+
+      {% else %}
+      <p class="muted small">Terminé le {{ r.end_date|jour }}</p>
+      <p>{{ hearts(r.rating) }}</p>
+      {% if r.comment %}<p class="shelf-comment">« {{ r.comment|truncate(excerpt, killwords=True, end='…') }} »</p>{% endif %}
+      <details class="shelf-dates">
+        <summary class="small">Modifier les dates</summary>
+        <form method="post" action="{{ url_for('library.dates', reading_id=r.id) }}" class="date-form">
+          <label>Commencé le
+            <input type="date" name="start_date" value="{{ r.start_date }}" max="{{ today }}" required>
+          </label>
+          <label>Terminé le
+            <input type="date" name="end_date" value="{{ r.end_date }}" max="{{ today }}" required>
+          </label>
+          <button class="btn btn-ghost btn-small" type="submit">Enregistrer</button>
+        </form>
+      </details>
+      <div class="shelf-actions">
+        <a class="btn btn-primary btn-small" href="{{ url_for('library.avis', reading_id=r.id) }}">Mon avis</a>
+        <a class="btn btn-ghost btn-small" href="{{ url_for('library.retirer', reading_id=r.id) }}">Retirer</a>
+      </div>
+      {% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% else %}
+<div class="card empty-state">
+  <span class="cover-face" aria-hidden="true">•︵•</span>
+  {% if tab == 'a-lire' %}
+  <p class="muted">Ta pile est vide : explore les univers pour trouver ton prochain livre.</p>
+  <a class="btn btn-lime btn-small" href="{{ url_for('main.explorer') }}">✦ Explorer les univers</a>
+  {% elif tab == 'en-cours' %}
+  <p class="muted">Rien en cours : pioche dans ta pile pour commencer un livre.</p>
+  <a class="btn btn-lime btn-small" href="{{ url_for('library.bibliotheque', onglet='a-lire') }}">Voir ma pile</a>
+  {% else %}
+  <p class="muted">Aucune lecture terminée pour l'instant : termine un livre pour lui donner ton avis.</p>
+  <a class="btn btn-lime btn-small" href="{{ url_for('main.accueil') }}">Trouver une lecture</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

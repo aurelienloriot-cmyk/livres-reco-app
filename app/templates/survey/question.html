@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_macros.html" import logo %}
+{% block title %}Question {{ n }} sur {{ total }} · Et maintenant, je lis quoi ?{% endblock %}
+{% block body_class %}page-survey{% endblock %}
+{% block body %}
+<header class="survey-header">
+  {{ logo() }}
+  <div class="survey-count">
+    <strong>{{ n }} sur {{ total }}</strong>
+    <span>Ton profil se dessine ✦</span>
+  </div>
+</header>
+<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ total }}" aria-valuenow="{{ n }}">
+  <div class="progress-bar" style="width: {{ (n * 100 / total)|round|int }}%"></div>
+</div>
+
+<main class="survey">
+  <span class="badge">QUESTION {{ '%02d' % n }}</span>
+  <h1>{{ q.text }}</h1>
+  <p class="muted lead">{{ q.help }}</p>
+
+  {% if error %}<div class="alert" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+  <form method="post" class="survey-form">
+    <div class="options">
+      {% for o in q.options %}
+      <label class="option{% if o.code == 'neutre' %} option-neutral{% endif %}">
+        <input type="{{ 'radio' if q.type == 'single' else 'checkbox' }}" name="answer"
+               value="{{ o.code }}"{% if o.code in selected %} checked{% endif %}
+               {% if o.code in exclusive %}data-exclusive{% endif %}>
+        <span class="option-body">
+          <span>{{ o.label }}</span>
+          <span class="option-icon" aria-hidden="true"></span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+
+    {% if q.id == 'q1' %}
+    <label class="other-field"{% if 'autre' not in selected %} hidden{% endif %}>
+      Précise si tu veux
+      <input name="autre" maxlength="100" value="{{ other_text }}" placeholder="Mangas, poésie, BD…">
+    </label>
+    {% endif %}
+
+    <div class="survey-actions">
+      {% if n > 1 %}
+      <a class="btn btn-ghost" href="{{ url_for(endpoint, n=n - 1) }}">← Retour</a>
+      {% endif %}
+      <button class="btn btn-primary btn-continue" type="submit"{% if not selected %} disabled{% endif %}>
+        {{ 'Valider' if n == total else 'Continuer' }} →
+      </button>
+    </div>
+  </form>
+  {% if retake %}
+  <p class="saved-note">✓ Brouillon enregistré : ton profil actuel ne change qu'à la validation de la question {{ total }}.</p>
+  <form method="post" action="{{ url_for('survey.abandonner') }}" class="center">
+    <button class="btn btn-ghost btn-small" type="submit">Abandonner le brouillon</button>
+  </form>
+  {% else %}
+  <p class="saved-note">✓ Tes réponses sont enregistrées automatiquement.</p>
+  {% endif %}
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/survey.js') }}"></script>
+{% endblock %}

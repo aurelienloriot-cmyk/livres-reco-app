@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% set missing = 'information indisponible' %}
+{% block title %}{{ book.title }} · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<article class="book-page">
+  <div class="book-page-cover">{% include "_cover.html" %}</div>
+
+  <div class="book-page-body">
+    {% if group %}<p class="eyebrow">{{ group|upper }}</p>{% endif %}
+    <h1 class="page-title">{{ book.title }}</h1>
+    <p class="book-page-authors">{{ book.authors|join(', ') if book.authors else 'Auteur : ' ~ missing }}</p>
+
+    {% with score=scores.get(book.id) %}{% include "_affinity.html" %}{% endwith %}
+    {% if reason %}<p class="reason">✦ {{ reason }}</p>{% endif %}
+
+    <section class="reading-actions card">
+      {% set status = reading.status if reading else None %}
+      {% if status is none %}
+      <form method="post" action="{{ url_for('books.ajouter', book_id=book.id) }}">
+        <button class="btn btn-lime" type="submit">+ Ajouter à ma pile</button>
+      </form>
+      {% endif %}
+      {% if status is none or status == 'à lire' %}
+      <form method="post" action="{{ url_for('books.commencer', book_id=book.id) }}" class="date-form">
+        {% if status == 'à lire' %}<p class="muted small">Dans ta pile à lire, en position {{ reading.rank }}.</p>{% endif %}
+        <label>Commencé le
+          <input type="date" name="date" value="{{ today }}" max="{{ today }}" required>
+        </label>
+        <button class="btn btn-primary" type="submit">Commencer</button>
+      </form>
+      {% elif status == 'en cours' %}
+      <form method="post" action="{{ url_for('books.terminer', book_id=book.id) }}" class="date-form">
+        <p class="muted small">En cours depuis le {{ reading.start_date }}.</p>
+        <label>Terminé le
+          <input type="date" name="date" value="{{ today }}" min="{{ reading.start_date }}" max="{{ today }}" required>
+        </label>
+        <button class="btn btn-primary" type="submit">Terminer</button>
+      </form>
+      {% else %}
+      <p class="muted small">Lu du {{ reading.start_date }} au {{ reading.end_date }}.</p>
+      <a class="btn btn-primary" href="{{ url_for('library.avis', reading_id=reading.id) }}">Voir mon avis</a>
+      {% endif %}
+    </section>
+
+    <h2 class="section-title">Résumé</h2>
+    <p class="description">{{ book.description or missing }}</p>
+
+    <dl class="facts">
+      <dt>Genre</dt><dd>{{ group or missing }}</dd>
+      <dt>Catégories</dt><dd>{{ categories|join(', ') if categories else missing }}</dd>
+      <dt>Thèmes</dt><dd>{{ themes|join(', ') if themes else missing }}</dd>
+      <dt>Ambiance</dt><dd>{{ ambiance or missing }}</dd>
+      <dt>Année</dt><dd>{{ book.published_year or missing }}</dd>
+      <dt>Pages</dt><dd>{{ book.page_count or missing }}</dd>
+    </dl>
+  </div>
+</article>
+
+<section class="card section-card">
+  <p class="eyebrow">DANS LE MÊME ESPRIT</p>
+  <h2>Livres proches</h2>
+  {% if similar %}
+  <div class="book-grid">
+    {% for s in similar %}
+    {% with book=s.book, score=scores.get(s.book.id), link_args={}, note=s.explanation %}{% include "_book_card.html" %}{% endwith %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">Aucun livre proche ne passe tes filtres actuels.</p>
+  {% endif %}
+</section>
+{% endblock %}

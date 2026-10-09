@@ -1,0 +1,22 @@
+[
+  {"type": "minuscules", "requete": "texaco", "id": 541, "titre": "Texaco"},
+  {"type": "minuscules", "requete": "la route", "id": 160, "titre": "La Route"},
+  {"type": "minuscules", "requete": "gloutons et dragons", "id": 354, "titre": "Gloutons et Dragons (Tome 1)"},
+  {"type": "minuscules", "requete": "le mystère du fiacre", "id": 662, "titre": "Le Mystère du Fiacre"},
+  {"type": "sans accents", "requete": "la science experimentale", "id": 317, "titre": "La science expérimentale"},
+  {"type": "sans accents", "requete": "giraudoux europeen", "id": 58, "titre": "Giraudoux européen de l'entre-deux-guerres"},
+  {"type": "sans accents", "requete": "les francaises ont le regard triste", "id": 854, "titre": "Les françaises ont le regard triste"},
+  {"type": "sans accents", "requete": "l'epouse volee", "id": 863, "titre": "La famille Vallerand (Tome 1) - L’épouse volée"},
+  {"type": "titre partiel", "requete": "salauds devront", "id": 666, "titre": "Les Salauds devront payer"},
+  {"type": "titre partiel", "requete": "pension caron", "id": 219, "titre": "La Pension Caron - Tome 2"},
+  {"type": "titre partiel", "requete": "trois royaumes", "id": 417, "titre": "La Guerre des Trois Royaumes"},
+  {"type": "titre partiel", "requete": "mythe et politique", "id": 436, "titre": "Entre mythe et politique"},
+  {"type": "auteur seul", "requete": "denis johnson", "id": 215, "titre": "Fiskadoro"},
+  {"type": "auteur seul", "requete": "mayoux", "id": 685, "titre": "Bien Paraître"},
+  {"type": "auteur seul", "requete": "marc ferro", "id": 1210, "titre": "De Russie et d'ailleurs"},
+  {"type": "auteur seul", "requete": "rebecca crowley", "id": 941, "titre": "Secrets de vestiaires (Tome 1) - Sous contrat"},
+  {"type": "faute d'une lettre", "requete": "le blues de l'echymose", "id": 1194, "titre": "Le Blues de l'ecchymose"},
+  {"type": "faute d'une lettre", "requete": "deux pas vers demin", "id": 264, "titre": "Deux pas vers demain"},
+  {"type": "faute d'une lettre", "requete": "nos terres sont notre vye", "id": 992, "titre": "Nos terres sont notre vie"},
+  {"type": "faute d'une lettre", "requete": "courtisanne d'un soir", "id": 864, "titre": "Courtisane d’un soir"}
+]

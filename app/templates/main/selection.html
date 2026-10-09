@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}{{ section.title }} · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ section.eyebrow }}</p>
+<h1 class="page-title">{{ section.title }}</h1>
+<p class="muted">{{ section.subtitle }}</p>
+{% if section.notice %}<div class="notice"><p>{{ section.notice }}</p></div>{% endif %}
+
+{% if section['items'] %}
+<div class="book-grid">
+  {% for item in section['items'] %}
+  {% with book=item.book, link_args={'from': section.kind}, note=item.note, score=scores.get(item.book.id) %}{% include "_book_card.html" %}{% endwith %}
+  {% endfor %}
+</div>
+{% if more %}
+<nav class="pagination">
+  <a class="btn btn-lime btn-small" href="{{ url_for('main.selection', kind=section.kind, lots=lots + 1) }}">Voir 24 livres de plus</a>
+</nav>
+{% endif %}
+{% else %}
+<section class="card empty-state">
+  <span class="cover-face" aria-hidden="true">•︵•</span>
+  <p class="muted">{{ section.empty }}</p>
+</section>
+{% endif %}
+<p><a href="{{ url_for('main.accueil') }}">← Retour à l'accueil</a></p>
+{% endblock %}

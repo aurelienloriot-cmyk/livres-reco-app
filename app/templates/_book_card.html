@@ -1,0 +1,12 @@
+{# Carte livre réutilisable : {% with book=..., score=scores.get(book.id), link_args={...}, note="..." %}{% include "_book_card.html" %}{% endwith %}
+   score : S du livre contre le profil (home.scores_for), affiché « S % d'affinité » ;
+   link_args (facultatif) : paramètres ajoutés au lien de la fiche (q, from) ; note : ligne sous l'auteur. #}
+<article class="book-card">
+  {% include "_affinity.html" %}
+  <a class="book-link" href="{{ url_for('books.fiche', book_id=book.id, **(link_args or {})) }}">
+    {% include "_cover.html" %}
+    <h3 class="book-title">{{ book.title }}</h3>
+  </a>
+  <p class="book-author">{{ book.authors|join(', ') if book.authors else 'Auteur inconnu' }}</p>
+  {% if note %}<p class="book-note">{{ note }}</p>{% endif %}
+</article>

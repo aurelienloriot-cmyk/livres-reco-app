@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block title %}Accueil · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<div class="home-head">
+  <div>
+    <p class="eyebrow">COUCOU {{ g.user.username|upper }} ✦</p>
+    <h1 class="home-title">On lit quoi, maintenant ?</h1>
+    <p class="muted">Des suggestions qui ressemblent à tes goûts, pas seulement aux classements.</p>
+  </div>
+  <a class="universe-teaser" href="{{ url_for('main.explorer') }}">
+    <span class="eyebrow-small">POUR TOI</span>
+    <span class="teaser-body"><strong>3</strong> univers proches de tes goûts →</span>
+  </a>
+</div>
+
+<section class="card current-reading">
+  <p class="eyebrow">LECTURE DU MOMENT</p>
+  {% set r = current.reading %}
+  {% if r %}
+  <div class="current-body">
+    {% with book={'id': r.book_id, 'title': r.title, 'authors': r.authors, 'isbn': r.isbn, 'thumbnail': r.thumbnail} %}
+    <div class="current-cover">{% include "_cover.html" %}</div>
+    {% endwith %}
+    <div>
+      <h2>{{ r.title }}</h2>
+      <p class="book-author">{{ r.authors|join(', ') if r.authors else 'Auteur inconnu' }}</p>
+      <p class="muted small">Commencé le {{ r.start_date|jour }}</p>
+      <div class="current-actions">
+        <a class="btn btn-ghost btn-small" href="{{ url_for('books.fiche', book_id=r.book_id) }}">Voir</a>
+        <form method="post" action="{{ url_for('books.terminer', book_id=r.book_id) }}">
+          <input type="hidden" name="date" value="{{ today }}">
+          <button class="btn btn-primary btn-small" type="submit">Terminer</button>
+        </form>
+      </div>
+      {% if current.others %}<p class="muted small">+ {{ current.others }} autre{{ 's' if current.others > 1 }} en cours</p>{% endif %}
+    </div>
+  </div>
+  {% elif current.next %}
+  <p class="muted">Rien en cours pour l'instant. Ouvre ta pile : <a href="{{ url_for('books.fiche', book_id=current.next.book_id) }}">{{ current.next.title }}</a> t'attend en tête.</p>
+  {% else %}
+  <p class="muted">Rien en cours et ta pile est vide : choisis un livre ci-dessous et ajoute-le à ta pile pour l'ouvrir.</p>
+  {% endif %}
+</section>
+
+{% if error %}<div class="alert" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% for section in sections %}{% include "_section.html" %}{% endfor %}
+{% endblock %}

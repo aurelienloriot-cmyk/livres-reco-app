@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Explorer · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<p class="eyebrow">POUR TOI</p>
+<h1 class="page-title">3 univers proches de tes goûts</h1>
+<p class="muted">Tirés de ce qui compte le plus dans ton profil : tes thèmes, puis tes ambiances, puis tes genres.</p>
+
+{% if error %}<div class="alert" role="alert"><p>{{ error }}</p></div>{% endif %}
+{% for u in universes %}
+<section class="card section-card home-section" id="{{ u.key }}">
+  <p class="eyebrow">{{ 'UNIVERS VOISIN' if u.neighbor else 'UNIVERS ' ~ loop.index }}</p>
+  <h2>{{ u.title }}</h2>
+  <p class="muted">{{ u.explanation }}</p>
+  <div class="book-row">
+    {% for r in u['items'] %}
+    {% with book=r.book, link_args={'from': 'univers'}, note=None, score=scores.get(r.book.id) %}{% include "_book_card.html" %}{% endwith %}
+    {% endfor %}
+  </div>
+</section>
+{% else %}{% if not error %}
+<section class="card empty-state">
+  <span class="cover-face" aria-hidden="true">•︵•</span>
+  <p class="muted">Aucun univers ne passe tes filtres actuels : élargis-les pour explorer.</p>
+  <button class="btn btn-lime btn-small" type="button" data-filters-open>Ajuster mes filtres</button>
+</section>
+{% endif %}{% endfor %}
+{% endblock %}

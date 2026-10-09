@@ -1,0 +1,2 @@
+{# Badge « S % d'affinité » : couleur selon les seuils 80/60/40 (home.affinity_level). #}
+{% if score is number %}<span class="affinity affinity-{{ score|affinite_niveau }}">{{ score|affinite }}</span>{% endif %}

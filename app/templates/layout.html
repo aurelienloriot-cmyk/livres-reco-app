@@ -1,0 +1,68 @@
+{# Gabarit des pages protégées : en-tête (recherche, filtres), menu latéral, panneau de filtres. #}
+{% extends "base.html" %}
+{% from "_macros.html" import logo %}
+{% block body_class %}page-app{% endblock %}
+{% block body %}
+<header class="topbar{% if query %} search-open{% endif %}">
+  {{ logo() }}
+  <button class="icon-btn search-toggle" type="button" data-search-toggle
+          aria-controls="search-bar" aria-expanded="{{ 'true' if query else 'false' }}" aria-label="Rechercher"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
+  <form class="search-bar" id="search-bar" action="{{ url_for('books.recherche') }}" method="get" role="search">
+    <span class="search-icon" aria-hidden="true">⌕</span>
+    <input type="search" name="q" value="{{ query or '' }}" placeholder="Titre, auteur…"
+           aria-label="Rechercher un titre ou un auteur" minlength="2">
+  </form>
+  <div class="topbar-right">
+    <button class="btn btn-lime btn-small" type="button" data-filters-open
+            aria-controls="filters-panel" aria-expanded="false" aria-label="Filtres">≡<span class="btn-label"> Filtres</span></button>
+    <a class="btn btn-ghost btn-small desktop-only" href="{{ url_for('auth.deconnexion') }}">Se déconnecter</a>
+    <span class="avatar" title="{{ g.user.username }}">{{ g.user.username[0]|upper }}</span>
+  </div>
+</header>
+
+{% if active_filters %}
+<div class="active-filters">
+  <span class="muted small">Filtres actifs :</span>
+  {% for label in active_filters %}<button type="button" class="chip" data-filters-open>{{ label }}</button>{% endfor %}
+</div>
+{% endif %}
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav">
+      <a class="nav-item{% if active == 'accueil' %} active{% endif %}" href="{{ url_for('main.accueil') }}">⌂ Accueil</a>
+      <a class="nav-item{% if active == 'explorer' %} active{% endif %}" href="{{ url_for('main.explorer') }}">✦ Explorer</a>
+      <a class="nav-item{% if active == 'bibliotheque' %} active{% endif %}" href="{{ url_for('library.bibliotheque') }}">▤ Ma bibliothèque <span class="nav-badge">{{ library_count or 0 }}</span></a>
+      <a class="nav-item{% if active == 'profil' %} active{% endif %}" href="{{ url_for('library.profil') }}">◎ Mon profil</a>
+    </nav>
+    <div class="profile-mini">
+      <span class="eyebrow-small">TON PROFIL</span>
+      <strong>{{ g.user.profile_label }}</strong>
+      <span class="face" aria-hidden="true">•‿•</span>
+    </div>
+  </aside>
+
+  <main class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="{{ 'alert' if category == 'error' else 'notice' }}" role="status"><p>{{ message }}</p></div>
+    {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+    <p class="mobile-only logout-mobile"><a class="btn btn-ghost btn-small" href="{{ url_for('auth.deconnexion') }}">Se déconnecter</a></p>
+  </main>
+</div>
+
+{# Mobile (< 768 px) : le menu latéral laisse place à cette barre fixe en bas. #}
+<nav class="bottom-nav" aria-label="Navigation principale">
+  <a class="bottom-item{% if active == 'accueil' %} active{% endif %}" href="{{ url_for('main.accueil') }}"><span aria-hidden="true">⌂</span>Accueil</a>
+  <a class="bottom-item{% if active == 'explorer' %} active{% endif %}" href="{{ url_for('main.explorer') }}"><span aria-hidden="true">✦</span>Explorer</a>
+  <a class="bottom-item{% if active == 'bibliotheque' %} active{% endif %}" href="{{ url_for('library.bibliotheque') }}"><span class="bottom-icon"><span aria-hidden="true">▤</span><span class="nav-badge">{{ library_count or 0 }}</span></span>Bibliothèque</a>
+  <a class="bottom-item{% if active == 'profil' %} active{% endif %}" href="{{ url_for('library.profil') }}"><span aria-hidden="true">◎</span>Profil</a>
+</nav>
+
+{% include "_filters_panel.html" %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

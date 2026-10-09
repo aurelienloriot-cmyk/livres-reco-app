@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Retirer un livre · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<section class="card review-card">
+  <p class="eyebrow">CONFIRMATION</p>
+  <h1 class="page-title">Retirer « {{ reading.title }} » ?</h1>
+  {% if reading.status == 'terminé' %}
+  <p>Ta lecture, ta note et ton commentaire seront supprimés, et ton profil sera recalculé sans cette note.</p>
+  {% else %}
+  <p>Le livre quittera ta bibliothèque.</p>
+  {% endif %}
+  <form method="post" class="review-actions">
+    <input type="hidden" name="confirme" value="1">
+    <a class="btn btn-ghost" href="{{ url_for('library.bibliotheque', onglet=tab) }}">Annuler</a>
+    <button class="btn btn-primary" type="submit">Oui, retirer</button>
+  </form>
+</section>
+{% endblock %}

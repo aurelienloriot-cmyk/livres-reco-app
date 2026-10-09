@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+{% block title %}Mon profil · Et maintenant, je lis quoi ?{% endblock %}
+{% macro empty() %}<p class="stat-empty">Pas encore de données</p>{% endmacro %}
+{% macro num(n) %}{{ '{:,}'.format(n).replace(',', ' ') }}{% endmacro %}
+{% macro dec(x) %}{{ '%.1f'|format(x)|replace('.', ',') }}{% endmacro %}
+{% macro plural(n, word) %}{{ n }} {{ word }}{{ 's' if n > 1 }}{% endmacro %}
+{% block content %}
+{% if g.user.is_demo %}
+<div class="notice" role="note"><p><strong>Compte de démonstration</strong> : ce lecteur et ses lectures sont fictifs.</p></div>
+{% endif %}
+
+<section class="page-head">
+  <p class="eyebrow">TA BOUSSOLE LITTÉRAIRE</p>
+  <h1 class="page-title-xl">Mon profil</h1>
+  <p class="muted page-lead">Ce que tu nous as dit — et ce que tes lectures nous apprennent.</p>
+</section>
+
+<div class="profile-grid">
+  <section class="pcard pcard-violet profile-main">
+    <p class="eyebrow-rose">PROFIL DOMINANT</p>
+    <h2 class="profile-main-label">{{ profile.label }}</h2>
+    <p class="profile-main-text">{{ profile.label_description }}</p>
+    <ul class="pills">
+      {% for tag in profile.label_tags %}<li class="pill">{{ tag }}</li>{% endfor %}
+    </ul>
+    {% if draft %}
+    <div class="notice" role="status">
+      <p>Tu as commencé à refaire le questionnaire : ton profil actuel reste actif jusqu'à la dernière question.</p>
+      <div class="section-actions">
+        <a class="btn btn-primary btn-small" href="{{ url_for('survey.refaire') }}">Reprendre</a>
+        <form method="post" action="{{ url_for('survey.abandonner') }}">
+          <button class="btn btn-ghost btn-small" type="submit">Abandonner le brouillon</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <a class="btn btn-white" href="{{ url_for('survey.refaire') }}">Revoir mes réponses</a>
+    {% endif %}
+  </section>
+
+  <section class="pcard pcard-yellow profile-confidence">
+    <p class="eyebrow-rose">CONFIANCE DU PROFIL</p>
+    {% set circ = 326.73 %}
+    <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="Confiance du profil : {{ confidence }} %">
+      <circle class="ring-track" cx="60" cy="60" r="52"/>
+      <circle class="ring-value" cx="60" cy="60" r="52"
+              stroke-dasharray="{{ '%.2f'|format(circ * confidence / 100) }} {{ circ }}"
+              transform="rotate(-90 60 60)"/>
+      <text x="60" y="60" text-anchor="middle" dominant-baseline="central">{{ confidence }}%</text>
+    </svg>
+    <p class="muted small">Ton profil devient plus précis à mesure que tu notes tes lectures.</p>
+  </section>
+
+  <a class="pcard pcard-sky count-card" href="{{ url_for('library.bibliotheque', onglet='en-cours') }}">
+    <span class="muted">Livres en cours</span>
+    <strong class="count-value">{{ counts['en cours'] }}</strong>
+    <span class="count-link">Voir mes lectures →</span>
+  </a>
+
+  <a class="pcard pcard-lime count-card" href="{{ url_for('library.bibliotheque', onglet='termines') }}">
+    <span class="muted">Livres terminés</span>
+    <strong class="count-value">{{ counts['terminé'] }}</strong>
+    <span class="count-link">Voir mon historique →</span>
+  </a>
+</div>
+
+<nav class="shortcuts" aria-label="Raccourcis">
+  <a class="pcard shortcut" href="{{ url_for('main.explorer') }}">
+    <span class="shortcut-icon" aria-hidden="true">✦</span>
+    <span><strong>Explorer mes 3 univers</strong><span class="muted">Des thèmes proches de mes goûts →</span></span>
+  </a>
+  <a class="pcard shortcut" href="{{ url_for('library.bibliotheque', onglet='a-lire') }}">
+    <span class="shortcut-icon" aria-hidden="true">♡</span>
+    <span><strong>Classer ma pile à lire</strong><span class="muted">Choisir ce qui vient ensuite →</span></span>
+  </a>
+  <form method="post" action="{{ url_for('main.renouveler') }}">
+    <button class="pcard shortcut" type="submit">
+      <span class="shortcut-icon" aria-hidden="true">↻</span>
+      <span><strong>Renouveler mes recommandations</strong><span class="muted">Faire entrer de nouveaux titres →</span></span>
+    </button>
+  </form>
+</nav>
+
+{% if trends %}
+<section class="pcard trends-card">
+  <h2 class="section-title">Tendances observées</h2>
+  <p class="muted small">Ce que tes notes ont appris à ton profil, par rapport à tes réponses.</p>
+  <ul class="pills">
+    {% for t in trends %}<li class="pill">{{ t }}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section id="statistiques" class="stats-section">
+  <div class="stats-head">
+    <div>
+      <p class="eyebrow">TON ANNÉE EN PAGES</p>
+      <h2 class="page-title">Mes statistiques de lecture</h2>
+    </div>
+    <p class="muted small">Elles se mettent à jour à chaque livre terminé. Les pages sont comptées à la date de fin.</p>
+  </div>
+
+  {% if not stats.finished %}
+  <div class="notice" role="status">
+    <p>Termine un premier livre pour voir tes statistiques apparaître.
+      <a href="{{ url_for('library.bibliotheque', onglet='en-cours') }}">Voir mes lectures en cours</a></p>
+  </div>
+  {% endif %}
+
+  <div class="stats-grid">
+    {% set fav = stats.favorite %}
+    {% if fav %}
+    <a class="pcard stat-card stat-favorite stat-link" href="{{ url_for('books.fiche', book_id=fav.book_id) }}">
+      <p class="stat-label">TON LIVRE PRÉFÉRÉ</p>
+      <p class="stat-title">{{ fav.title }}</p>
+      <p class="stat-sub">{% if fav.authors %}{{ fav.authors|join(', ') }} · {% endif %}{{ fav.rating }}/5 ♥</p>
+    </a>
+    {% else %}
+    <div class="pcard stat-card stat-favorite">
+      <p class="stat-label">TON LIVRE PRÉFÉRÉ</p>
+      {% if stats.finished %}<p class="stat-empty">Note un livre terminé pour élire ton préféré</p>{% else %}{{ empty() }}{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="pcard pcard-sky stat-card">
+      <p class="stat-label">PAGES PAR SEMAINE</p>
+      {% if stats.pace is not none %}
+      <p class="stat-value">{{ num(stats.pace) }}</p>
+      <p class="stat-sub">Moyenne depuis le début du suivi</p>
+      {% else %}{{ empty() }}{% endif %}
+    </div>
+
+    <div class="pcard pcard-lime stat-card">
+      <p class="stat-label">LIVRES LUS CE MOIS</p>
+      {% if stats.finished %}
+      <p class="stat-value">{{ stats.month }}</p>
+      <p class="stat-sub">Terminé{{ 's' if stats.month > 1 }} en {{ stats.month_name }}</p>
+      {% else %}{{ empty() }}{% endif %}
+    </div>
+
+    <div class="pcard pcard-pink stat-card">
+      <p class="stat-label">TA NOTE MOYENNE</p>
+      {% if stats.average is not none %}
+      <p class="stat-value">{{ dec(stats.average) }}/5</p>
+      {% else %}{{ empty() }}{% endif %}
+      {% if stats.finished %}<p class="stat-sub">{{ plural(stats.rated, 'livre') }} noté{{ 's' if stats.rated > 1 }} sur {{ stats.finished }}</p>{% endif %}
+    </div>
+
+    <div class="pcard pcard-yellow stat-card">
+      <p class="stat-label">PAGES TOURNÉES</p>
+      {% if stats.pages is not none %}
+      <p class="stat-value">{{ num(stats.pages) }}</p>
+      <p class="stat-sub">{{ plural(stats.finished, 'livre') }} terminé{{ 's' if stats.finished > 1 }}{% if stats.unknown_pages %} · {{ plural(stats.unknown_pages, 'lecture') }} sans nombre de pages{% endif %}</p>
+      {% else %}{{ empty() }}{% endif %}
+    </div>
+
+    {% set big = stats.biggest %}
+    {% if big %}
+    <a class="pcard pcard-lavender stat-card stat-link" href="{{ url_for('books.fiche', book_id=big.book_id) }}">
+      <p class="stat-label">TON PLUS GROS LIVRE</p>
+      <p class="stat-value">{{ num(big.page_count) }}</p>
+      <p class="stat-sub">pages · {{ big.title }}</p>
+    </a>
+    {% else %}
+    <div class="pcard pcard-lavender stat-card">
+      <p class="stat-label">TON PLUS GROS LIVRE</p>
+      {{ empty() }}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="stats-pair">
+    <section class="pcard stat-card">
+      <h3 class="eyebrow">TES GENRES DE PRÉDILECTION</h3>
+      {% if stats.genres %}
+      {% set top = stats.genres[0].count %}
+      <ul class="bars">
+        {% for row in stats.genres %}
+        <li>
+          <div class="bar-head">
+            <strong>{{ labels.get(row.category, row.category) }}</strong>
+            <span class="muted">{{ plural(row.count, 'lecture') }}{% if row.average is not none %} · {{ dec(row.average) }}/5{% endif %}</span>
+          </div>
+          <span class="bar"><span style="width: {{ (100 * row.count / top)|round|int }}%"></span></span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}{{ empty() }}{% endif %}
+    </section>
+
+    <section class="pcard stat-card">
+      <h3 class="eyebrow">TES THÈMES ET AMBIANCES PRÉFÉRÉS</h3>
+      {% if stats.moods %}
+      <ul class="pills">
+        {% for row in stats.moods %}
+        <li class="pill pill-count">{{ row.label|capitalize }} <span>{{ row.count }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}{{ empty() }}{% endif %}
+    </section>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Ton profil · Et maintenant, je lis quoi ?{% endblock %}
+{% block body_class %}page-profile{% endblock %}
+{% block body %}
+<main class="profile-wrap">
+  <section class="card profile-card">
+    <span class="profile-orbit" aria-hidden="true"></span>
+    <span class="badge">PROFIL CRÉÉ</span>
+    <p class="eyebrow">TON PROFIL DOMINANT</p>
+    <h1 class="profile-label">{{ profile.label }}</h1>
+    <p class="profile-description">{{ profile.label_description }}</p>
+    <ul class="tags">
+      {% for tag in profile.label_tags %}<li class="tag">{{ tag }}</li>{% endfor %}
+    </ul>
+    <a class="btn btn-primary btn-block btn-big" href="{{ url_for('main.accueil') }}">Découvrir mes recommandations →</a>
+    <p class="muted small">Ce profil évoluera doucement avec tes notes de lecture.</p>
+  </section>
+</main>
+{% endblock %}

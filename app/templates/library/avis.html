@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block title %}Ton avis · Et maintenant, je lis quoi ?{% endblock %}
+{% block content %}
+<section class="card review-card">
+  <p class="eyebrow">TON AVIS</p>
+  <h1 class="page-title">{{ reading.title }}</h1>
+  <p class="muted">{{ reading.authors|join(', ') if reading.authors else 'Auteur inconnu' }} · lu du {{ reading.start_date|jour }} au {{ reading.end_date|jour }}</p>
+
+  {% if error %}<div class="alert" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+  <form method="post" class="form review-form">
+    <fieldset class="rating-field" data-rating>
+      <legend>Ta note <span class="muted small">(facultative)</span></legend>
+      <div class="hearts">
+        {# Ordre inverse (5 → 1) affiché de gauche à droite : le CSS colore le cœur choisi et ceux qui le précèdent. #}
+        {% for v in [5, 4, 3, 2, 1] %}
+        <input type="radio" name="rating" id="note-{{ v }}" value="{{ v }}"{% if rating == v %} checked{% endif %}>
+        <label for="note-{{ v }}" title="{{ v }} sur 5"><span aria-hidden="true">♥</span><span class="sr-only">{{ v }} cœur{{ 's' if v > 1 }} sur 5</span></label>
+        {% endfor %}
+      </div>
+      <output class="rating-value" data-rating-value aria-live="polite">{{ '%d/5'|format(rating) if rating else 'Sans note' }}</output>
+      <label class="no-rating">
+        <input type="radio" name="rating" value=""{% if not rating %} checked{% endif %}> Sans note
+      </label>
+    </fieldset>
+
+    <label>Ton commentaire <span class="muted small">(facultatif, {{ comment_max }} caractères max.)</span>
+      <textarea name="comment" rows="6" maxlength="{{ comment_max }}" placeholder="Ce que tu as aimé, ou moins aimé…">{{ comment }}</textarea>
+    </label>
+    <p class="muted small">🔒 Ton avis est privé : toi seul·e peux le lire.</p>
+
+    <div class="review-actions">
+      <a class="btn btn-ghost" href="{{ url_for('library.bibliotheque', onglet='termines') }}">Plus tard</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

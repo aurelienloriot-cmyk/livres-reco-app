@@ -1,0 +1,25 @@
+{% macro logo() %}
+<a class="logo" href="{{ url_for('main.accueil') }}">
+  <img class="logo-mark" src="{{ url_for('static', filename='img/logo.png') }}" alt="" width="48" height="45">
+  <span class="logo-text">Et maintenant,<br><strong>je lis quoi ?</strong></span>
+</a>
+{% endmacro %}
+
+{% macro errors_list(errors) %}
+{% if errors %}
+<div class="alert" role="alert">
+  {% for e in errors %}<p>{{ e }}</p>{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro hearts(rating) %}
+{% if rating %}
+<span class="hearts-show" role="img" aria-label="Note : {{ rating }} sur 5">
+  {%- for i in range(1, 6) %}<span class="{{ 'on' if i <= rating else 'off' }}" aria-hidden="true">♥</span>{% endfor -%}
+  <span class="rating-num" aria-hidden="true">{{ rating }}/5</span>
+</span>
+{% else %}
+<span class="muted small">Pas de note</span>
+{% endif %}
+{% endmacro %}

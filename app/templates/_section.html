@@ -1,0 +1,35 @@
+{# Section de 5 cartes de l'accueil : {% with section=..., more_link=True %}{% include "_section.html" %}{% endwith %}
+   Rangée défilable horizontalement sur mobile ; chaque carte mène à la fiche avec ?from=<kind>. #}
+<section class="card section-card home-section section-{{ section.kind }}" id="{{ section.kind }}">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">{{ section.eyebrow }}</p>
+      <h2>{{ section.title }}</h2>
+    </div>
+    {% if section['items'] %}
+    <div class="section-actions">
+      {% if section.kind == 'pour-toi' %}
+      <form method="post" action="{{ url_for('main.renouveler') }}">
+        <button class="btn btn-lime btn-small" type="submit">↻ Renouveler</button>
+      </form>
+      {% endif %}
+      <a class="btn btn-ghost btn-small" href="{{ url_for('main.selection', kind=section.kind) }}">Voir toute la sélection →</a>
+    </div>
+    {% endif %}
+  </div>
+  {% if section.notice %}<div class="notice"><p>{{ section.notice }}</p></div>{% endif %}
+  {% if section['items'] %}
+  <div class="book-row">
+    {% for item in section['items'] %}
+    {% with book=item.book, link_args={'from': section.kind}, note=item.note, score=scores.get(item.book.id) %}{% include "_book_card.html" %}{% endwith %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span class="cover-face" aria-hidden="true">•︵•</span>
+    <p class="muted">{{ section.empty }}</p>
+    {% if active_filters %}<button class="btn btn-lime btn-small" type="button" data-filters-open>Ajuster mes filtres</button>{% endif %}
+  </div>
+  {% endif %}
+  <p class="muted small section-subtitle">{{ section.subtitle }}</p>
+</section>
